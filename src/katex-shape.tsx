@@ -8,6 +8,8 @@ import {
 	stopEventPropagation,
 } from 'tldraw'
 
+import katex from 'katex'
+
 // There's a guide at the bottom of this file!
 
 const ANIMAL_EMOJIS = ['🐶', '🐱', '🐨', '🐮', '🐴']
@@ -18,6 +20,7 @@ type IMyEditableShape = TLBaseShape<
 		w: number
 		h: number
 		animal: number
+		text: string
 	}
 >
 
@@ -27,6 +30,7 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 		w: T.number,
 		h: T.number,
 		animal: T.number,
+		text: T.string
 	}
 
 	// [1] !!!
@@ -37,6 +41,7 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 			w: 200,
 			h: 200,
 			animal: 0,
+			text: "\\sin^2\\theta"
 		}
 	}
 
@@ -45,6 +50,11 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 		// [a]
 		const isEditing = this.editor.getEditingShapeId() === shape.id
 
+        let renderedHtml = {__html: katex.renderToString(shape.props.text, {
+            throwOnError: false,
+            output: "mathml"
+        })}
+
 		return (
 			<HTMLContainer
 				id={shape.id}
@@ -52,45 +62,26 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 				onPointerDown={isEditing ? stopEventPropagation : undefined}
 				style={{
 					pointerEvents: isEditing ? 'all' : 'none',
-					backgroundColor: '#efefef',
-					fontSize: 24,
-					padding: 16,
 				}}
 			>
-				{ANIMAL_EMOJIS[shape.props.animal]}
-				{/* [c] */}
-				{isEditing ? (
-					<button
-						onClick={() => {
-							this.editor.updateShape({
-								id: shape.id,
-								type: shape.type,
-								props: {
-									...shape.props,
-									animal: (shape.props.animal + 1) % ANIMAL_EMOJIS.length,
-								},
-							})
-						}}
-					>
-						Next
-					</button>
-				) : (
-					// [d] when not editing...
-					<p style={{ fontSize: 12 }}>Double Click to Edit</p>
-				)}
+				<div style={{fontSize: 24, textAlign: "center"}} dangerouslySetInnerHTML={renderedHtml}/>
+				{isEditing &&
+					<textarea onChange={(event)=>{this.editor.updateShape({
+						id: shape.id,
+						type: shape.type,
+						props: {
+							...shape.props,
+							text: event.target.value,
+						},
+					})}}>
+						{shape.props.text}
+					</textarea>
+				}
 			</HTMLContainer>
 		)
 	}
 
 	indicator(shape: IMyEditableShape) {
 		return <rect width={shape.props.w} height={shape.props.h} />
-	}
-
-	// [3]
-	override onEditEnd: TLOnEditEndHandler<IMyEditableShape> = (shape) => {
-		this.editor.animateShape(
-			{ ...shape, rotation: shape.rotation + Math.PI * 2 },
-			{ animation: { duration: 250 } }
-		)
 	}
 }
