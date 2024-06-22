@@ -4,22 +4,16 @@ import {
 	RecordProps,
 	T,
 	TLBaseShape,
-	TLOnEditEndHandler,
 	stopEventPropagation,
 } from 'tldraw'
 
 import katex from 'katex'
-
-// There's a guide at the bottom of this file!
-
-const ANIMAL_EMOJIS = ['🐶', '🐱', '🐨', '🐮', '🐴']
 
 type IMyEditableShape = TLBaseShape<
 	'katex-shape',
 	{
 		w: number
 		h: number
-		animal: number
 		text: string
 	}
 >
@@ -29,7 +23,6 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 	static override props: RecordProps<IMyEditableShape> = {
 		w: T.number,
 		h: T.number,
-		animal: T.number,
 		text: T.string
 	}
 
@@ -40,8 +33,7 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 		return {
 			w: 200,
 			h: 200,
-			animal: 0,
-			text: "\\sin^2\\theta"
+			text: "\\sin^2\\theta+\\cos^2\\theta=1"
 		}
 	}
 
@@ -62,11 +54,30 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 				onPointerDown={isEditing ? stopEventPropagation : undefined}
 				style={{
 					pointerEvents: isEditing ? 'all' : 'none',
+					paddingTop: '4px',
+					display: "flex",
+					flexFlow: "column"
 				}}
 			>
-				<div style={{fontSize: 24, textAlign: "center"}} dangerouslySetInnerHTML={renderedHtml}/>
+				<div
+					style={{
+						fontSize: 24,
+						textAlign: "center",
+						flex: "0 1 auto"
+					}}
+					 dangerouslySetInnerHTML={renderedHtml}/>
 				{isEditing &&
-					<textarea onChange={(event)=>{this.editor.updateShape({
+					<textarea 
+					style={{
+						backgroundColor: "rgba(82, 78, 183, 0.2)",
+						color: "currentColor",
+						width: "100%",
+						border: "none",
+						flex: "1 1 auto",
+						padding: "5px",
+						fontFamily: "monospace"
+					}}
+					onChange={(event)=>{this.editor.updateShape({
 						id: shape.id,
 						type: shape.type,
 						props: {
