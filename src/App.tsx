@@ -39,6 +39,7 @@ import {
   XBoxToolbarItem,
 } from 'tldraw'
 import { KatexTool } from './katex-tool'
+import { KatexShapeUtil } from './katex-shape'
 
 import 'tldraw/tldraw.css'
 import './index.css'
@@ -167,6 +168,7 @@ export const customAssetUrls: TLUiAssetUrlOverrides = {
 }
 
 const customTools = [KatexTool]
+const customShapeUtils = [KatexShapeUtil]
 
 export default function App() {
   return (
@@ -176,6 +178,7 @@ export default function App() {
         overrides={uiOverrides}
         components={components}
         assetUrls={customAssetUrls}
+				shapeUtils={customShapeUtils}
       />
     </div>
   )

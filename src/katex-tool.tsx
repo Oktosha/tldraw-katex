@@ -1,7 +1,5 @@
 import { StateNode } from 'tldraw'
 
-const OFFSET = 12
-
 export class KatexTool extends StateNode {
 	static override id = 'katex'
 
@@ -11,11 +9,9 @@ export class KatexTool extends StateNode {
 
 	override onPointerDown = () => {
 		const { currentPagePoint } = this.editor.inputs
-		this.editor.createShape({
-			type: 'text',
-			x: currentPagePoint.x - OFFSET,
-			y: currentPagePoint.y - OFFSET,
-			props: { text: '❤️' },
-		})
+		this.editor.createShape({ 
+			type: 'katex-shape', 
+			x: currentPagePoint.x, 
+			y: currentPagePoint.y })
 	}
 }
