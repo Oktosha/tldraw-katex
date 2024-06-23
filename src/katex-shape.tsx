@@ -1,15 +1,17 @@
 import {
-	BaseBoxShapeUtil,
+	Geometry2d,
 	HTMLContainer,
 	RecordProps,
+	Rectangle2d,
 	T,
 	TLBaseShape,
+	ShapeUtil,
 	stopEventPropagation,
 } from 'tldraw'
 
 import katex from 'katex'
 
-type IMyEditableShape = TLBaseShape<
+type IMyKatexShape = TLBaseShape<
 	'katex-shape',
 	{
 		w: number
@@ -18,27 +20,35 @@ type IMyEditableShape = TLBaseShape<
 	}
 >
 
-export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
+export class KatexShapeUtil extends ShapeUtil<IMyKatexShape> {
 	static override type = 'katex-shape' as const
-	static override props: RecordProps<IMyEditableShape> = {
+	static override props: RecordProps<IMyKatexShape> = {
 		w: T.number,
 		h: T.number,
 		text: T.string
 	}
 
-	// [1] !!!
 	override canEdit = () => true
+	override canResize = () => false
+	override isAspectRatioLocked = () => false
 
-	getDefaultProps(): IMyEditableShape['props'] {
+	getGeometry(shape: IMyKatexShape): Geometry2d {
+		return new Rectangle2d({
+			width: shape.props.w,
+			height: shape.props.h,
+			isFilled: true,
+		})
+	}
+
+	getDefaultProps(): IMyKatexShape['props'] {
 		return {
 			w: 200,
-			h: 200,
+			h: 45,
 			text: "\\sin^2\\theta+\\cos^2\\theta=1"
 		}
 	}
 
-	// [2]
-	component(shape: IMyEditableShape) {
+	component(shape: IMyKatexShape) {
 		// [a]
 		const isEditing = this.editor.getEditingShapeId() === shape.id
 
@@ -47,6 +57,8 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
             output: "mathml"
         })}
 
+		const parentPadding = 5
+
 		return (
 			<HTMLContainer
 				id={shape.id}
@@ -54,45 +66,55 @@ export class KatexShapeUtil extends BaseBoxShapeUtil<IMyEditableShape> {
 				onPointerDown={isEditing ? stopEventPropagation : undefined}
 				style={{
 					pointerEvents: isEditing ? 'all' : 'none',
-					paddingTop: '4px',
-					display: "flex",
-					flexFlow: "column"
+					paddingTop: parentPadding + "px",
 				}}
 			>
 				<div
 					style={{
+						margin: 0,
+						padding: "5px",
 						fontSize: 24,
-						textAlign: "center",
-						flex: "0 1 auto"
+						textAlign: "center"
 					}}
 					 dangerouslySetInnerHTML={renderedHtml}/>
 				{isEditing &&
 					<textarea 
 					style={{
+						margin: 0,
+						padding: "5px",
+						paddingTop: "10px",
+						position: "absolute",
 						backgroundColor: "rgba(82, 78, 183, 0.2)",
 						color: "currentColor",
-						width: "100%",
+						width: "150%",
+						height: "200%",
 						border: "none",
-						flex: "1 1 auto",
-						padding: "5px",
 						fontFamily: "monospace"
 					}}
-					onChange={(event)=>{this.editor.updateShape({
+					onChange={(event)=>{
+						const text = event.target.value;
+						const parent = event.target.parentNode! as HTMLElement;
+						const formula = parent.children[0] as HTMLElement;
+						const h = formula.scrollHeight + parentPadding;
+						const w = formula.scrollWidth;
+						this.editor.updateShape({
 						id: shape.id,
 						type: shape.type,
 						props: {
 							...shape.props,
-							text: event.target.value,
+							text: text,
+							h: h,
+							w: w
 						},
-					})}}>
-						{shape.props.text}
-					</textarea>
+					})}}
+					value={shape.props.text}
+					/>
 				}
 			</HTMLContainer>
 		)
 	}
 
-	indicator(shape: IMyEditableShape) {
+	indicator(shape: IMyKatexShape) {
 		return <rect width={shape.props.w} height={shape.props.h} />
 	}
 }
