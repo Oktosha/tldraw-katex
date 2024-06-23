@@ -18,7 +18,6 @@ export class KatexTool extends StateNode {
 			type: 'katex-shape', 
 			x: currentPagePoint.x, 
 			y: currentPagePoint.y })
-		this.editor.select(id);
 		this.editor.setEditingShape(id);
 		this.editor.setCurrentTool('select');
 	}
