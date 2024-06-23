@@ -1,4 +1,7 @@
-import { StateNode } from 'tldraw'
+import { 
+	createShapeId,
+	StateNode 
+} from 'tldraw'
 
 export class KatexTool extends StateNode {
 	static override id = 'katex'
@@ -8,10 +11,15 @@ export class KatexTool extends StateNode {
 	}
 
 	override onPointerDown = () => {
-		const { currentPagePoint } = this.editor.inputs
+		const { currentPagePoint } = this.editor.inputs;
+		const id = createShapeId();
 		this.editor.createShape({ 
+			id: id,
 			type: 'katex-shape', 
 			x: currentPagePoint.x, 
 			y: currentPagePoint.y })
+		this.editor.select(id);
+		this.editor.setEditingShape(id);
+		this.editor.setCurrentTool('select');
 	}
 }
